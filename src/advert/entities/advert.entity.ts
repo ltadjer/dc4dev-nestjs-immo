@@ -1,5 +1,6 @@
 import { TimestampEntity } from "src/generic/timestamp.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { UserEntity } from "src/user/entities/user.entity";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("advert")
 export class AdvertEntity extends TimestampEntity {
@@ -20,4 +21,7 @@ export class AdvertEntity extends TimestampEntity {
 
     @Column({ nullable: true })
     surface: number;
+
+    @ManyToOne(() => UserEntity, user => user.adverts)
+    user: UserEntity;
 }

@@ -37,6 +37,7 @@ export class AdvertService {
     if (queries.min_surface) min_surface = parseInt(queries.min_surface);
     if (queries.max_surface) max_surface = parseInt(queries.max_surface);
     if(queries.page) page = parseInt(queries.page);
+    if(queries.limit) limit = parseInt(queries.limit);
 
     // SELECT * from advert WHERE price <= max_price AND nb_rooms >= min_rooms
     let queryBuilder = this.advertRepository.createQueryBuilder("advert")
@@ -56,6 +57,8 @@ export class AdvertService {
     if(max_surface && max_surface > 0) {
       queryBuilder.andWhere("advert.surface <= :max_surface", { max_surface: max_surface })
     }
+
+    queryBuilder.leftJoinAndSelect("advert.user", "user")
 
     offset = (page - 1) * limit
 
