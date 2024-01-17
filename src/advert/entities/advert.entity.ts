@@ -11,4 +11,13 @@ export class AdvertEntity extends TimestampEntity {
 
     @Column()
     description: string;
+
+    @Column()
+    price: number;
+
+    @Column()
+    nb_rooms: number;
+
+    @Column({ nullable: true })
+    surface: number;
 }

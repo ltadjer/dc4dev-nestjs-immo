@@ -39,6 +39,7 @@ With docker and makefile
 
 Manually with npm
 ```bash
+  docker-compose up -d
   npm install
   npm run start:dev
 ```

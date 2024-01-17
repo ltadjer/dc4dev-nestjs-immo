@@ -4,6 +4,7 @@ import { UpdateAdvertDto } from './dto/update-advert.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AdvertEntity } from './entities/advert.entity';
 import { Repository } from 'typeorm';
+import { QueriesAdvertDTO } from './dto/queries-advert.dto';
 
 @Injectable()
 export class AdvertService {
@@ -20,8 +21,28 @@ export class AdvertService {
     }
   }
 
-  findAll() {
-    return this.advertRepository.find();
+  findAll(queries: QueriesAdvertDTO) {
+    let max_price: number
+    let min_rooms: number
+
+    // Convert to int
+    if (queries.max_price) max_price = parseInt(queries.max_price);
+    if (queries.min_rooms) min_rooms = parseInt(queries.min_rooms);
+
+    // SELECT * from advert WHERE price <= max_price AND nb_rooms >= min_rooms
+    let queryBuilder = this.advertRepository.createQueryBuilder("advert")
+
+    if(max_price && max_price > 0) {
+      queryBuilder.andWhere("advert.price <= :max_price", { max_price: max_price })
+    }
+
+    if(min_rooms && min_rooms > 0) {
+      queryBuilder.andWhere("advert.nb_rooms >= :min_rooms", { min_rooms: min_rooms })
+    }
+
+    // Ajouter un filtre pour la surface minimale et maximale
+
+    return queryBuilder.getMany();
   }
 
   findOne(id: number) {
