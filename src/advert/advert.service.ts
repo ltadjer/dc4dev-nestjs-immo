@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AdvertEntity } from './entities/advert.entity';
 import { Repository } from 'typeorm';
 import { QueriesAdvertDTO } from './dto/queries-advert.dto';
+import { max, min } from 'rxjs';
 
 @Injectable()
 export class AdvertService {
@@ -21,13 +22,21 @@ export class AdvertService {
     }
   }
 
-  findAll(queries: QueriesAdvertDTO) {
+  async findAll(queries: QueriesAdvertDTO) {
     let max_price: number
     let min_rooms: number
+    let min_surface: number
+    let max_surface: number
+    let page = 1
+    let limit = 2
+    let offset = 0
 
     // Convert to int
     if (queries.max_price) max_price = parseInt(queries.max_price);
     if (queries.min_rooms) min_rooms = parseInt(queries.min_rooms);
+    if (queries.min_surface) min_surface = parseInt(queries.min_surface);
+    if (queries.max_surface) max_surface = parseInt(queries.max_surface);
+    if(queries.page) page = parseInt(queries.page);
 
     // SELECT * from advert WHERE price <= max_price AND nb_rooms >= min_rooms
     let queryBuilder = this.advertRepository.createQueryBuilder("advert")
@@ -40,9 +49,28 @@ export class AdvertService {
       queryBuilder.andWhere("advert.nb_rooms >= :min_rooms", { min_rooms: min_rooms })
     }
 
-    // Ajouter un filtre pour la surface minimale et maximale
+    if(min_surface && min_surface > 0) {
+      queryBuilder.andWhere("advert.surface >= :min_surface", { min_surface: min_surface })
+    }
 
-    return queryBuilder.getMany();
+    if(max_surface && max_surface > 0) {
+      queryBuilder.andWhere("advert.surface <= :max_surface", { max_surface: max_surface })
+    }
+
+    offset = (page - 1) * limit
+
+    queryBuilder
+          .limit(limit)
+          .offset()
+
+    const [advertList, totalCount] = await queryBuilder.getManyAndCount()
+    
+    return {
+      data: advertList,
+      totalCount: totalCount,
+      totalPage: Math.ceil(totalCount / limit),
+      page: page,
+    }
   }
 
   findOne(id: number) {
