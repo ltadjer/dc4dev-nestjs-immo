@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AdvertEntity } from './entities/advert.entity';
 import { Repository } from 'typeorm';
 import { QueriesAdvertDTO } from './dto/queries-advert.dto';
-import { max, min } from 'rxjs';
 
 @Injectable()
 export class AdvertService {
