@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateAdvertDto } from './dto/create-advert.dto';
 import { UpdateAdvertDto } from './dto/update-advert.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,9 +13,18 @@ export class AdvertService {
     private readonly advertRepository: Repository<AdvertEntity>,
   ) {}
 
-  create(createAdvertDto: CreateAdvertDto) {
+  create(createAdvertDto: CreateAdvertDto, user) {
+    console.log("create advert => user: ", user);
+
+    const advert = {
+      ...createAdvertDto,
+      user: {
+        id: user.id
+      },
+    }
+    
     try {
-      return this.advertRepository.save(createAdvertDto);
+      return this.advertRepository.save(advert);
     } catch (error) {
       throw new Error(error);
     }
@@ -76,16 +85,30 @@ export class AdvertService {
   }
 
   findOne(id: number) {
-    return this.advertRepository.findOneBy({
-      id: id
-    });
+    const queryBuilder = this.advertRepository.createQueryBuilder("advert")
+      .leftJoinAndSelect("advert.user", "user")
+      .where("advert.id = :id", { id: id })
+
+    return queryBuilder.getOne();
   }
 
-  update(id: number, updateAdvertDto: UpdateAdvertDto) {
+  async update(id: number, updateAdvertDto: UpdateAdvertDto, user) {
+    const adver = await this.findOne(id);
+
+    this.checkIfUserIsOwner(adver, user);
+
     return this.advertRepository.update(id, updateAdvertDto);
   }
 
-  remove(id: number) {
+  checkIfUserIsOwner(advert, user) {
+    if(advert.user.id!== user.id) throw new UnauthorizedException("You are not the owner of this advert")
+  }
+
+  async remove(id: number, user) {
+    const adver = await this.findOne(id);
+
+    this.checkIfUserIsOwner(adver, user);
+
     return this.advertRepository.softDelete(id);
   }
 }
