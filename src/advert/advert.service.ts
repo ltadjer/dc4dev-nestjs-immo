@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AdvertEntity } from './entities/advert.entity';
 import { Repository } from 'typeorm';
 import { QueriesAdvertDTO } from './dto/queries-advert.dto';
+import { query } from 'express';
 
 @Injectable()
 export class AdvertService {
@@ -14,8 +15,6 @@ export class AdvertService {
   ) {}
 
   create(createAdvertDto: CreateAdvertDto, user) {
-    console.log("create advert => user: ", user);
-
     const advert = {
       ...createAdvertDto,
       user: {
@@ -67,6 +66,7 @@ export class AdvertService {
     }
 
     queryBuilder.leftJoinAndSelect("advert.user", "user")
+    queryBuilder.leftJoinAndSelect("advert.category", "category")
 
     offset = (page - 1) * limit
 
@@ -87,6 +87,7 @@ export class AdvertService {
   findOne(id: number) {
     const queryBuilder = this.advertRepository.createQueryBuilder("advert")
       .leftJoinAndSelect("advert.user", "user")
+      .leftJoinAndSelect("advert.category", "category")
       .where("advert.id = :id", { id: id })
 
     return queryBuilder.getOne();

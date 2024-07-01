@@ -1,5 +1,6 @@
 import { TimestampEntity } from "src/generic/timestamp.entity";
 import { UserEntity } from "src/user/entities/user.entity";
+import { CategoryEntity } from "src/category/entities/category.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("advert")
@@ -24,4 +25,7 @@ export class AdvertEntity extends TimestampEntity {
 
     @ManyToOne(() => UserEntity, user => user.adverts)
     user: UserEntity;
+
+    @ManyToOne(() => CategoryEntity, category => category.adverts)
+    category: CategoryEntity;
 }
